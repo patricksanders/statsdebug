@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	log "github.com/inconshreveable/log15"
 )
 
 type Counter map[string]int
@@ -19,6 +21,7 @@ func (c Counter) get(key string) int {
 var cache *Counter
 
 func main() {
+	log.Info("starting")
 	cache = &Counter{}
 	go httpListener()
 	statsdListener()
