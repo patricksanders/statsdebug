@@ -4,7 +4,7 @@ GOLANG_VERSION ?= 1.12
 USERNAME ?= patricksanders
 REPO_NAME ?= statsdebug
 TRAVIS_REPO_SLUG ?= ${USERNAME}/${REPO_NAME}
-VERSION ?= v0.0.0
+VERSION ?= v0.0.1
 DOCKER_TAG := ${TRAVIS_REPO_SLUG}:${VERSION}
 
 test:
@@ -24,4 +24,4 @@ ifneq ("$(GOLANG_VERSION)", "latest")
 endif
 
 run:
-	@docker run --rm -it -p 8080:80 -p 8125:8125/udp --rm ${DOCKER_TAG}
+	@docker run --rm -it -p 8080:8080 -p 8125:8125/udp --rm ${DOCKER_TAG}

@@ -1,28 +1,35 @@
 package main
 
 import (
-	"fmt"
+	"sync"
 
-	log "github.com/inconshreveable/log15"
+	"github.com/inconshreveable/log15"
 )
 
 type Counter map[string]int
 
-func (c Counter) increment(key string) error {
+var log = log15.New("module", "statsdebug")
+var lock = sync.RWMutex{}
+
+func (c Counter) increment(key string) {
+	lock.Lock()
+	defer lock.Unlock()
 	c[key]++
-	fmt.Printf("Stat %s has value %d\n", key, c[key])
-	return nil
 }
 
 func (c Counter) get(key string) int {
+	lock.RLock()
+	defer lock.RUnlock()
 	return c[key]
 }
 
-var cache *Counter
+var counter *Counter
 
+func init() {
+}
 func main() {
 	log.Info("starting")
-	cache = &Counter{}
-	go httpListener()
-	statsdListener()
+	counter = &Counter{}
+	go statsdListener()
+	serve()
 }

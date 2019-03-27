@@ -7,10 +7,11 @@ import (
 )
 
 type Stat struct {
-	Name  string
-	Type  string
-	Value string
-	Tags  []string
+	Name       string
+	Type       string
+	Value      string
+	SampleRate string
+	Tags       []string
 }
 
 func statsdListener() {
@@ -29,18 +30,52 @@ func statsdListener() {
 
 func handleStat(stat string) {
 	s, _ := parseStat(stat)
-	cache.increment(s.Name)
+	log.Info("handling stat packet", "stat", s.Name)
+	counter.increment(s.Name)
 }
 
 func parseStat(stat string) (*Stat, error) {
 	s := Stat{}
+
 	parts := strings.SplitN(stat, ":", 2)
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid stat string")
+	}
 	s.Name = parts[0]
+
 	parts = strings.SplitN(parts[1], "|", 2)
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid stat string")
+	}
 	s.Value = parts[0]
-	parts = strings.SplitN(parts[1], "#", 2)
-	s.Type = parts[0]
-	s.Tags = strings.Split(parts[1], ",")
+
+	if strings.Contains(parts[1], "|") {
+		// Another pipe means a sample rate.
+		if strings.Contains(parts[1], "#") {
+			// We also have tags!
+			parts = strings.SplitN(parts[1], "|", 2)
+			s.Type = parts[0]
+			parts = strings.SplitN(parts[1], "#", 2)
+			s.SampleRate = parts[0]
+			s.Tags = strings.Split(parts[1], ",")
+		} else {
+			// No hash, so no tags. Pull out the type and sample rate.
+			parts = strings.SplitN(parts[1], "|", 2)
+			s.Type = parts[0]
+			s.SampleRate = parts[1]
+		}
+	} else {
+		// No sample rate here.
+		if strings.Contains(parts[1], "#") {
+			// We have tags!
+			parts = strings.SplitN(parts[1], "#", 2)
+			s.Type = parts[0]
+			s.Tags = strings.Split(parts[1], ",")
+		} else {
+			// No hash, so no tags. Pull out the type.
+			s.Type = parts[1]
+		}
+	}
 
 	return &s, nil
 }
