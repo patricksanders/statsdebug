@@ -11,7 +11,8 @@ import (
 )
 
 func serve() {
-	http.HandleFunc("/", httpStatHandler)
+	http.HandleFunc("/all", httpAllHandler)
+	http.HandleFunc("/metric/", httpMetricHandler)
 	srv := &http.Server{
 		Addr:         ":8080",
 		WriteTimeout: time.Second * 10,
@@ -37,9 +38,16 @@ type CountResponse struct {
 	Count int `json:"count"`
 }
 
-func httpStatHandler(w http.ResponseWriter, r *http.Request) {
-	stat := r.URL.Path[1:]
-	log.Info("handling http request", "path", stat)
+func httpAllHandler(w http.ResponseWriter, r *http.Request) {
+	log.Info("handling http request", "path", r.URL.Path)
+	lock.RLock()
+	defer lock.RUnlock()
+	json.NewEncoder(w).Encode(&counter)
+}
+
+func httpMetricHandler(w http.ResponseWriter, r *http.Request) {
+	stat := r.URL.Path[8:]
+	log.Info("handling http request", "path", r.URL.Path)
 	response := CountResponse{
 		Count: counter.get(stat),
 	}
