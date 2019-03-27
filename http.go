@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"os"
 	"os/signal"
@@ -33,8 +33,15 @@ func serve() {
 	log.Info("Shutting down")
 }
 
+type CountResponse struct {
+	Count int `json:"count"`
+}
+
 func httpStatHandler(w http.ResponseWriter, r *http.Request) {
 	stat := r.URL.Path[1:]
 	log.Info("handling http request", "path", stat)
-	fmt.Fprintf(w, `{"count": %d}`, counter.get(stat))
+	response := CountResponse{
+		Count: counter.get(stat),
+	}
+	json.NewEncoder(w).Encode(&response)
 }
