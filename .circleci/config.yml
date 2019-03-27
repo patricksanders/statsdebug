@@ -6,7 +6,7 @@ jobs:
       - image: docker:stable
     steps:
       - checkout
-      - setup_remote_dockerr
+      - setup_remote_docker
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
@@ -18,11 +18,11 @@ jobs:
             set +o pipefail
             docker load -i /caches/app.tar | true
        - run:
-          name: Build application Docker image
-          command: |
-            make build
+           name: Build application Docker image
+           command: |
+             make build
        - run:
-          name: Save Docker image layer cache
-          command: |
-            mkdir -p /caches
-            docker save -o /caches/app.tar app
+           name: Save Docker image layer cache
+           command: |
+             mkdir -p /caches
+             docker save -o /caches/app.tar app
