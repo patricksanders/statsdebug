@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/patricksanders/statsdebug.svg?branch=master)](https://travis-ci.org/patricksanders/statsdebug)
+
 # statsdebug
 
 A small service to listen for statsd over UDP, parse the stats, and serve information about the metrics over HTTP.
