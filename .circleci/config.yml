@@ -2,25 +2,26 @@ version: 2.0
 jobs:
  build:
    docker:
-     - image: ubuntu:latest
+     - image: docker:stable
    steps:
      - checkout
+     - setup_remote_docker
+     - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/app.tar
      - run:
-         name: Setup
-         command: |
-           apt-get update && apt-get install -y \
-             apt-transport-https \
-             ca-certificates \
-             curl \
-             gnupg-agent \
-             software-properties-common
-           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-           add-apt-repository \
-             "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-             $(lsb_release -cs) \
-             stable"
-           apt-get update && apt-get install -y make docker-ce
-     - run:
-         name: Build
-         command: |
-           make build
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/app.tar | true
+      - run:
+          name: Build application Docker image
+          command: |
+            make build
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/app.tar app
