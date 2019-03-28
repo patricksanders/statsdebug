@@ -18,4 +18,6 @@ jobs:
       - deploy:
           name: Push application Docker image
           command: |
-            make publish
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              make publish
+            fi
