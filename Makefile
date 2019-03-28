@@ -23,5 +23,9 @@ ifneq ("$(GOLANG_VERSION)", "latest")
 	docker rmi ${TRAVIS_REPO_SLUG}:latest;
 endif
 
+publish:
+	@docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+	@docker push ${DOCKER_TAG}
+
 run:
 	@docker run --rm -it -p 8080:8080 -p 8125:8125/udp --rm ${DOCKER_TAG}

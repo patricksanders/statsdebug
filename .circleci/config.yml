@@ -15,3 +15,7 @@ jobs:
           name: Build application Docker image
           command: |
             make build
+      - deploy:
+          name: Push application Docker image
+          command: |
+            make publish
