@@ -4,8 +4,9 @@ GOLANG_VERSION ?= 1.12
 USERNAME ?= patricksanders
 REPO_NAME ?= statsdebug
 TRAVIS_REPO_SLUG ?= ${USERNAME}/${REPO_NAME}
-VERSION ?= v0.0.1
+VERSION ?= 0.1.0
 DOCKER_TAG := ${TRAVIS_REPO_SLUG}:${VERSION}
+LATEST_TAG := ${TRAVIS_REPO_SLUG}:latest
 
 test:
 	@docker run --rm \
@@ -19,9 +20,11 @@ build:
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		.
 	docker tag ${TRAVIS_REPO_SLUG} ${DOCKER_TAG}
-ifneq ("$(GOLANG_VERSION)", "latest")
-	docker rmi ${TRAVIS_REPO_SLUG}:latest;
-endif
+
+publish:
+	@docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+	@docker push ${DOCKER_TAG}
+	@docker push ${DOCKER_TAG}
 
 run:
 	@docker run --rm -it -p 8080:8080 -p 8125:8125/udp --rm ${DOCKER_TAG}

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/patricksanders/statsdebug.svg?branch=master)](https://travis-ci.org/patricksanders/statsdebug)
+[![CircleCI](https://circleci.com/gh/patricksanders/statsdebug/tree/master.svg?style=svg)](https://circleci.com/gh/patricksanders/statsdebug/tree/master)
 
 # statsdebug
 
