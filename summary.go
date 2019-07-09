@@ -100,8 +100,19 @@ func (s *Summary) get(name string) *StatResponse {
 	return r
 }
 
+func (s *Summary) getAllCount() map[string]int {
+	s.RLock()
+	defer s.RUnlock()
+
+	r := make(map[string]int)
+	for m, tracker := range s.metrics {
+		r[m] = tracker.count
+	}
+	return r
+}
+
 // get a map of all metric names to corresponding StatResponses
-func (s *Summary) getAll() map[string]*StatResponse {
+func (s *Summary) getAllDetails() map[string]*StatResponse {
 	s.RLock()
 	defer s.RUnlock()
 

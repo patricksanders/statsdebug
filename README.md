@@ -41,8 +41,15 @@ curl localhost:8080/metric/bar.foo.baz | jq .
 # Try another metric name
 for i in {1..500}; do printf "hello.world:5|c" | socat -t 0 - UDP:localhost:8125; done
 
-# Get counts of all metrics
+# Get counts for all metrics
 curl localhost:8080/all | jq .
+# {
+#   "bar.foo.baz": 1000,
+#   "hello.world": 500
+# }
+
+# Get details about all metrics
+curl localhost:8080/all/details | jq .
 # {
 #   "bar.foo.baz": {
 #     "count": 1000,

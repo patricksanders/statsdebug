@@ -12,6 +12,7 @@ import (
 
 func serve() {
 	http.HandleFunc("/all", httpAllHandler)
+	http.HandleFunc("/all/details", httpAllDetailsHandler)
 	http.HandleFunc("/metric/", httpMetricHandler)
 	http.HandleFunc("/reset", httpResetHandler)
 	srv := &http.Server{
@@ -37,7 +38,12 @@ func serve() {
 
 func httpAllHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("handling http request", "path", r.URL.Path)
-	json.NewEncoder(w).Encode(summary.getAll())
+	json.NewEncoder(w).Encode(summary.getAllCount())
+}
+
+func httpAllDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Info("handling http request", "path", r.URL.Path)
+	json.NewEncoder(w).Encode(summary.getAllDetails())
 }
 
 func httpMetricHandler(w http.ResponseWriter, r *http.Request) {
