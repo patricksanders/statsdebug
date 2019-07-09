@@ -5,7 +5,7 @@ WORKDIR /opt/statsdebug
 
 COPY . /opt/statsdebug
 
-RUN go test . && go build --ldflags '-extldflags "-static"' -tags netgo -installsuffix netgo .
+RUN go test . -v -race && go build --ldflags '-extldflags "-static"' -tags netgo -installsuffix netgo .
 
 FROM scratch
 

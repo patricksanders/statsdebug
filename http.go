@@ -34,22 +34,13 @@ func serve() {
 	log.Info("Shutting down")
 }
 
-type CountResponse struct {
-	Count int `json:"count"`
-}
-
 func httpAllHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("handling http request", "path", r.URL.Path)
-	lock.RLock()
-	defer lock.RUnlock()
-	json.NewEncoder(w).Encode(&counter)
+	json.NewEncoder(w).Encode(summary.getAll())
 }
 
 func httpMetricHandler(w http.ResponseWriter, r *http.Request) {
 	stat := r.URL.Path[8:]
 	log.Info("handling http request", "path", r.URL.Path)
-	response := CountResponse{
-		Count: counter.get(stat),
-	}
-	json.NewEncoder(w).Encode(&response)
+	json.NewEncoder(w).Encode(summary.get(stat))
 }
