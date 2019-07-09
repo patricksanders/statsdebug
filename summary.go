@@ -8,7 +8,7 @@ import (
 
 var empty struct{}
 
-// StatTracker holds a summary for a single metric
+// StatTracker holds a summary for a single metric. Note that it does NOT handle RW locking.
 type StatTracker struct {
 	count int
 	// Map of tag name to tag value (to empty struct, such that it is effectively a set of values)
@@ -33,7 +33,52 @@ func NewStatTracker() *StatTracker {
 	}
 }
 
-// Summary manages locking for a map of metric names to StatTracker structs
+func (t *StatTracker) add(stat *Stat) {
+	t.count++
+
+	// Sort tags before joining them
+	sort.Strings(stat.Tags)
+	t.tagSets[strings.Join(stat.Tags, ",")]++
+
+	for _, tag := range stat.Tags {
+		parts := strings.Split(tag, ":")
+		if len(parts) != 2 {
+			log.Warn("failed parsing a tag: unexpected format", "tag", tag)
+			continue
+		}
+		if _, ok := t.tags[parts[0]]; !ok {
+			t.tags[parts[0]] = make(map[string]struct{})
+		}
+		t.tags[parts[0]][parts[1]] = empty
+	}
+}
+
+func (t *StatTracker) get() *StatResponse {
+	r := &StatResponse{}
+
+	if t == nil {
+		return r
+	}
+
+	r.Count = t.count
+	r.Tags = make(map[string][]string, len(t.tags))
+	for tag, vals := range t.tags {
+		r.Tags[tag] = make([]string, len(vals))
+		i := 0
+		for v := range vals {
+			r.Tags[tag][i] = v
+			i++
+		}
+		sort.Strings(r.Tags[tag])
+	}
+
+	r.TagSets = t.tagSets
+	return r
+}
+
+// ------------------------------------------------------------------------
+
+// Summary manages locking for a map of metric names to StatTrackers
 type Summary struct {
 	metrics map[string]*StatTracker
 
@@ -55,49 +100,14 @@ func (s *Summary) add(stat *Stat) {
 	if _, ok := s.metrics[stat.Name]; !ok {
 		s.metrics[stat.Name] = NewStatTracker()
 	}
-
-	ss := s.metrics[stat.Name]
-	ss.count++
-	ss.tagSets[strings.Join(stat.Tags, ",")]++
-	for _, tag := range stat.Tags {
-		parts := strings.Split(tag, ":")
-		if len(parts) != 2 {
-			log.Warn("failed parsing a tag: unexpected format", "tag", tag)
-			continue
-		}
-		if _, ok := ss.tags[parts[0]]; !ok {
-			ss.tags[parts[0]] = make(map[string]struct{})
-		}
-		ss.tags[parts[0]][parts[1]] = empty
-	}
+	s.metrics[stat.Name].add(stat)
 }
 
 // get a StatResponse for a single metric
 func (s *Summary) get(name string) *StatResponse {
 	s.RLock()
 	defer s.RUnlock()
-
-	r := &StatResponse{}
-
-	ss, ok := s.metrics[name]
-	if !ok {
-		return r
-	}
-
-	r.Count = ss.count
-	r.Tags = make(map[string][]string, len(ss.tags))
-	for tag, vals := range ss.tags {
-		r.Tags[tag] = make([]string, len(vals))
-		i := 0
-		for v := range vals {
-			r.Tags[tag][i] = v
-			i++
-		}
-		sort.Strings(r.Tags[tag])
-	}
-
-	r.TagSets = s.metrics[name].tagSets
-	return r
+	return s.metrics[name].get()
 }
 
 func (s *Summary) getAllCount() map[string]int {
