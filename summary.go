@@ -111,3 +111,11 @@ func (s *Summary) getAll() map[string]*StatResponse {
 	}
 	return r
 }
+
+// reset clears the tracked metrics
+func (s *Summary) reset() {
+	s.Lock()
+	defer s.Unlock()
+
+	s.metrics = make(map[string]*StatTracker)
+}

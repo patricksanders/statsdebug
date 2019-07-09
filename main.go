@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	log = log15.New("module", "statsdebug")
+	log     = log15.New("module", "statsdebug")
 	summary *Summary
 )
 

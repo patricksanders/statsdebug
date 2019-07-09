@@ -38,10 +38,10 @@ func TestParseStat(t *testing.T) {
 			input:       "bar.foo.baz:5|c#foo:bar,baz:bang",
 			shouldError: false,
 			expected: &Stat{
-				Name:     "bar.foo.baz",
-				Type:     "c",
-				Value:    "5",
-				Tags:     []string{"baz:bang", "foo:bar"},
+				Name:  "bar.foo.baz",
+				Type:  "c",
+				Value: "5",
+				Tags:  []string{"baz:bang", "foo:bar"},
 			},
 		},
 		{
