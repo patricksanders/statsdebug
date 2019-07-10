@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"sort"
 	"strings"
 )
 
@@ -31,7 +32,7 @@ func statsdListener() {
 func handleStat(stat string) {
 	s, _ := parseStat(stat)
 	log.Info("handling stat packet", "stat", s.Name)
-	counter.increment(s.Name)
+	summary.add(s)
 }
 
 func parseStat(stat string) (*Stat, error) {
@@ -76,6 +77,9 @@ func parseStat(stat string) (*Stat, error) {
 			s.Type = parts[1]
 		}
 	}
+
+	// Sort tags
+	sort.Strings(s.Tags)
 
 	return &s, nil
 }
